@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Cart</title>
+{% endblock %}
+
+
+{% block content %}
+{% if messages %}
+<div class="container mt-5">
+    <ul class="list-group messages">
+        {% for message in messages %}
+        <li {% if message.tags %} class="list-group-item list-group-item-{{ message.tags }}" {% endif %}>{{
+            message }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+<section class="ftco-section ftco-cart">
+    <div class="container">
+        {% if products %}
+        <div class="row">
+            <div class="col-md-12 ftco-animate">
+                <div class="cart-list">
+                    <table class="table">
+                        <thead class="thead-primary">
+                        <tr class="text-center">
+                            <th>SNO.</th>
+                            <th>Image</th>
+                            <th>Product name</th>
+                            <th>Price</th>
+                            <th>Quantity(Kg)</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {% for product in products %}
+                        <tr class="text-center">
+                            <td class="auto-increment"><strong>{{ forloop.counter }}</strong></td>
+
+                            <td class="image-prod">
+                                <div class="img" style="background-image:url({{ product.product.image_url }});"></div>
+                            </td>
+
+                            <td class="product-name">
+                                <h3>{{ product.product.name }}</h3>
+                                <p>{{ product.product.description }}</p>
+                            </td>
+
+                            <td class="price">${{ product.product.price|floatformat:2 }}</td>
+
+                            <td class="quantity">
+                                <a href="#" data-product="{{ product.product.id }}" data-action="remove"
+                                   class="add-cart"><i class="fas fa-minus-circle mr-2"></i></a>
+                                {{ product.quantity }}
+                                <a href="#" data-product="{{ product.product.id }}" data-action="add"
+                                   class="add-cart"><i class="fas fa-plus-circle ml-2"></i></a>
+                            </td>
+                            <td class="total">${{ product.get_total|floatformat:2}}</td>
+                            <td class="action">
+                                <a href="#" data-product="{{ product.product.id }}" data-action="delete"
+                                   class="add-cart mt-2">
+                                    <i class="far fa-trash-alt fa-lg" style="color: red !important;"></i>
+                                    <p style="color: red !important;">Delete</p>
+                                </a>
+                            </td>
+                        </tr><!-- END TR-->
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-end">
+            <div class="col-lg-4 mt-5 cart-wrap ftco-animate">
+                <div class="cart-total mb-3">
+                    <h3>Coupon Code</h3>
+                    <p>Enter your coupon code if you have one</p>
+                    <form action="#" class="info">
+                        <div class="form-group">
+                            <label for="">Coupon code</label>
+                            <input type="text" class="form-control text-left px-3" placeholder="">
+                        </div>
+                    </form>
+                </div>
+                <p><a href="checkout.html" class="btn btn-primary py-3 px-4">Apply Coupon</a></p>
+            </div>
+            <div class="col-lg-4 mt-5 cart-wrap ftco-animate">
+                <div class="cart-total mb-3">
+                    <h3>Estimate shipping and tax</h3>
+                    <p>Enter your destination to get a shipping estimate</p>
+                    <form action="#" class="info">
+                        <div class="form-group">
+                            <label for="">Country</label>
+                            <input type="text" class="form-control text-left px-3" placeholder="">
+                        </div>
+                        <div class="form-group">
+                            <label for="country">State/Province</label>
+                            <input type="text" class="form-control text-left px-3" placeholder="">
+                        </div>
+                        <div class="form-group">
+                            <label for="country">Zip/Postal Code</label>
+                            <input type="text" class="form-control text-left px-3" placeholder="">
+                        </div>
+                    </form>
+                </div>
+                <p><a href="checkout.html" class="btn btn-primary py-3 px-4">Estimate</a></p>
+            </div>
+            <div class="col-lg-4 mt-5 cart-wrap ftco-animate">
+                <div class="cart-total mb-3">
+                    <h3>Cart Totals</h3>
+                    <p class="d-flex">
+                        <span>Subtotal</span>
+                        <span>${{ order.get_cart_total|floatformat:2}}</span>
+                    </p>
+                    <p class="d-flex">
+                        <span>Delivery</span>
+                        <span>$0.00</span>
+                    </p>
+                    <p class="d-flex">
+                        <span>Discount</span>
+                        <span>$0.00</span>
+                    </p>
+                    <hr>
+                    <p class="d-flex total-price">
+                        <span>Total</span>
+                        <span>${{ order.get_cart_total|floatformat:2 }}</span>
+                    </p>
+                </div>
+                <p><a href="{% url 'checkout' %}" class="btn btn-primary py-3 px-4">Proceed to Checkout</a></p>
+            </div>
+        </div>
+        {% else %}
+        <ul class="list-group">
+            <li class="list-group-item list-group-item-info">There is no product in your cart.</li>
+        </ul>
+        <a href="{% url 'product' %}" class="btn btn-primary py-3 px-3 mt-5 float-none">Continue Shopping</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock%}
