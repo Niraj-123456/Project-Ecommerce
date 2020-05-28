@@ -10,7 +10,7 @@
 			width: 350px;
 			margin-top: 50px;
 			margin-bottom: 50px;
-			background: #74cfbf;
+			background: #82ae46;
 			position: relative;
 			display: flex;
 			justify-content: center;
@@ -27,19 +27,26 @@
 			margin-top: 20px;
 		}
 
+		.form-control {
+		    border: 0px;
+		}
+
 		#form-title{
 			color: #fff;
 		}
 
 		.login_btn {
 			width: 100%;
-			background: #33ccff !important;
+			background: #000000 !important;
 			color: white !important;
 		}
+
 		.login_btn:focus {
 			box-shadow: none !important;
 			outline: 0px !important;
+			color: black;
 		}
+
 		.login_container {
 			padding: 0 2rem;
 		}
@@ -61,6 +68,8 @@
 			padding: 10px;
 			margin-top: 10px;
 		}
+
+
 </style>
 {% endblock %}
 
@@ -68,6 +77,15 @@
 <div class="container h-100">
     <div class="d-flex justify-content-center h-100">
         <div class="user_card">
+            {% if messages %}
+            <ul class="list-group messages">
+                {% for message in messages %}
+                <li {% if message.tags %} class="list-group-item list-group-item-{{ message.tags }}" {% endif %}>{{
+                    message }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
             <div class="d-flex justify-content-center">
                 <h3 id="form-title">LOGIN</h3>
             </div>
@@ -95,10 +113,9 @@
             </div>
 
             <div class="mt-4">
-                <div class="d-flex justify-content-center links">
-                    Don't have an account? <a href="{% url 'register' %}" class="ml-2">Sign Up</a>
+                <div class="d-flex justify-content-center links text-light">
+                    Don't have an account?<a href="{% url 'register' %}" class="ml-2 text-light">Sign Up</a>
                 </div>
-
             </div>
         </div>
     </div>
