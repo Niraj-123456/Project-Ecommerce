@@ -1,14 +1,14 @@
 from django.shortcuts import render, redirect
-from .models import Product, Category, Order, OrderProduct, ShippingAddress
+from .models import *
 from django.http import JsonResponse
 import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .decorators import unauthenticated_user
-from django.utils import timezone
 import datetime
 from django.contrib import messages
 from .forms import CreateUserFrom
+from .utils import *
 
 
 def index(request):
@@ -62,9 +62,13 @@ def login_user(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('account')
+            customer, created = Customer.objects.get_or_create(
+                user=user,
+                name=username
+            )
+            return redirect('product')
         else:
-            messages.info(request, 'username or password incorrect')
+            messages.info(request, 'email or password incorrect')
     return render(request, 'forms/login.html')
 
 
@@ -79,16 +83,6 @@ def user_account(request):
     return render(request, 'useraccount.html')
 
 
-@login_required(login_url='login')
-def view_cart(request):
-    user = request.user
-    order, created = Order.objects.get_or_create(user=user, completed=False)
-    products = order.orderproduct_set.all()
-    context = {'products': products, 'order': order}
-    return render(request, 'cart.html', context)
-
-
-@login_required(login_url='login')
 def add_item_to_cart(request):
     data = json.loads(request.body)
     productId = data['productId']
@@ -97,10 +91,11 @@ def add_item_to_cart(request):
     print(productId)
     print(action)
 
-    user = request.user
+    customer = request.user.customer
+
     product = Product.objects.get(id=productId)
 
-    order, created = Order.objects.get_or_create(user=user, completed=False)
+    order, created = Order.objects.get_or_create(customer=customer, completed=False)
 
     orderProduct, created = OrderProduct.objects.get_or_create(order=order, product=product)
 
@@ -124,42 +119,54 @@ def add_item_to_cart(request):
     return JsonResponse("Product Added to cart", safe=False)
 
 
-@login_required(login_url='login')
+def view_cart(request):
+    data = cart_data(request)
+
+    products = data['products']
+    order = data['order']
+    cartItems = data['cartItems']
+
+    context = {'products': products, 'order': order, 'cartItems': cartItems}
+    return render(request, 'cart.html', context)
+
+
 def checkout(request):
-    user = request.user
-    order, created = Order.objects.get_or_create(user=user, completed=False)
-    products = order.orderproduct_set.all()
-    context = {'products': products, 'order': order}
+    data = cart_data(request)
+
+    products = data['products']
+    order = data['order']
+    cartItems = data['cartItems']
+
+    context = {'products': products, 'order': order, 'cartItems': cartItems}
     return render(request, 'checkout.html', context)
 
 
+# @login_required(login_url='login')
 def process_order(request):
     data = json.loads(request.body)
-    print('data:', data)
     transaction_id = datetime.datetime.now().timestamp()
     if request.user.is_authenticated:
-        user = request.user
-        order, created = Order.objects.get_or_create(user=user, completed=False)
-        total = float(data['shipping-info']['total'])
-        order.transaction_id = transaction_id
-
-        if total == order.get_cart_total:
-            order.completed = True
-        order.save()
-
-        ShippingAddress.objects.create(
-            user=user,
-            order=order,
-            firstname=data['shipping-info']['firstname'],
-            lastname=data['shipping-info']['lastname'],
-            street=data['shipping-info']['street'],
-            town_city=data['shipping-info']['towncity'],
-            phone=data['shipping-info']['phone'],
-            email=data['shipping-info']['email']
-        )
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, completed=False)
         messages.success(request, 'Your Order has been successfully created.')
-
     else:
-        print("User is not authenticated")
+        customer, order = guest_order(request, data)
+    total = data['shipping-info']['total']
+    order.transaction_id = transaction_id
+    if total == order.get_cart_total:
+        order.completed = True
+        print("order completed")
+    order.save()
+
+    ShippingAddress.objects.create(
+        customer=customer,
+        order=order,
+        firstname=data['shipping-info']['firstname'],
+        lastname=data['shipping-info']['lastname'],
+        street=data['shipping-info']['street'],
+        town_city=data['shipping-info']['towncity'],
+        phone=data['shipping-info']['phone'],
+        email=data['shipping-info']['email']
+    )
 
     return JsonResponse("Order submitted", safe=False)

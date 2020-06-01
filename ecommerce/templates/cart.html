@@ -17,6 +17,13 @@
     </ul>
 </div>
 {% endif %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-12 col-md-6">
+            <a href="{% url 'product' %}" class="btn btn-primary">Continue Shopping</a>
+        </div>
+    </div>
+</div>
 <section class="ftco-section ftco-cart">
     <div class="container">
         {% if products %}
@@ -137,7 +144,6 @@
         <ul class="list-group">
             <li class="list-group-item list-group-item-info">There is no product in your cart.</li>
         </ul>
-        <a href="{% url 'product' %}" class="btn btn-primary py-3 px-3 mt-5 float-none">Continue Shopping</a>
         {% endif %}
     </div>
 </section>

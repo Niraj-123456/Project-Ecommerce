@@ -9,12 +9,46 @@ for(i=0; i<updateBtn.length; i++){
         console.log('User:', user)
 
         if(user == 'AnonymousUser'){
-            console.log("User is not Authenticated..")
+            addCookieItem(productId, action)
         }
         else{
             addUserOrder(productId, action)
         }
     })
+}
+
+function addCookieItem(productId, action){
+    console.log("User is not Authenticated..")
+    if(action == 'add'){
+        if(cart[productId] == undefined){
+            cart[productId] = {'quantity': 1}
+            alert("Product added to your cart")
+        }
+        else{
+            cart[productId]['quantity'] += 1
+            alert("Product updated to your cart")
+        }
+    }
+    if(action == 'remove'){
+        cart[productId]['quantity'] -= 1
+        alert("Product updated to your cart")
+
+        if(cart[productId]['quantity'] <= 0){
+            console.log("Product removed")
+            alert("Product removed from your cart")
+            delete cart[productId]
+        }
+    }
+
+    if(action == 'delete'){
+        console.log("Product deleted")
+        delete cart[productId]
+        alert("Product removed from your cart")
+    }
+
+    console.log('Cart:', cart)
+    document.cookie = 'cart=' + JSON.stringify(cart) + ';domain=;path=/'
+    location.reload()
 }
 
 function addUserOrder(productId, action){

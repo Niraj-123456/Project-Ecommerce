@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Category, Product, OrderProduct, Order, ShippingAddress
+from .models import *
+
+
+class CustomerAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email')
 
 
 class ProductAdmin(admin.ModelAdmin):
@@ -11,9 +15,10 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('user', 'transaction_id', 'completed', 'date_ordered')
+    list_display = ('customer', 'transaction_id', 'completed', 'date_ordered')
 
 
+admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(OrderProduct)

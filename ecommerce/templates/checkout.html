@@ -14,8 +14,8 @@
 <div class="container">
     <div class="row mt-5 pt-0">
         <div class="col-md-12 d-flex">
-            <p><a href="{% url 'cart' %}" class="btn btn-primary px-4 py-3">Back To Cart</a></p>
-            <p><a href="{% url 'product' %}" class="btn btn-primary px-4 py-3 ml-2">Continue Shopping</a></p>
+            <p><a href="{% url 'cart' %}" class="btn btn-primary">Back To Cart</a></p>
+            <p><a href="{% url 'product' %}" class="btn btn-primary ml-3">Continue Shopping</a></p>
         </div>
     </div>
 </div>
@@ -85,10 +85,12 @@
                     <img src="{{ product.product.image_url }}" class="mr-3" alt="..." style="width:64px; height:64px;">
                     <div class="media-body">
                         <h5 class="mt-0">{{ product.product.name }}</h5>
-                        <p><strong>Description: {{ product.product.description }}</strong></p>
-                        <p><strong>Quantity: {{ product.quantity }}</strong></p>&nbsp;
-                        <p><strong>Price: $ {{ product.product.price }}</strong></p>&nbsp;&nbsp;
-                        <p><strong>Total: $ {{ product.get_total|floatformat:2 }}</strong></p>
+                        <p>Description: {{ product.product.description }}</p>
+                        <h6>
+                            <span class="badge badge-pill badge-success bg-primary mr-2 mb-2">Quantity: {{ product.quantity }}</span>
+                            <span class="badge badge-pill badge-success bg-primary mr-2 mb-2">Price: $ {{ product.product.price|floatformat:2}}</span>
+                            <span class="badge badge-pill badge-success bg-primary mr-2 mb-2">Total: $ {{ product.get_total|floatformat:2 }}</span>
+                        </h6>
                     </div>
                 </div>
                 <hr>
@@ -132,8 +134,8 @@
             </div>
         </div>
         <div class="row justify-content-center">
-            <div class="col-md-6 d-flex mb-5">
-                <div class="cart-detail cart-total p-3 p-md-4">
+            <div class="col-md-6 d-flex mt-3 mb-5">
+                <div class="cart-detail cart-total p-3 p-md-3 text-center">
                     <h3 class="billing-heading mb-4">Cart Total</h3>
                     <p class="d-flex">
                         <span>Subtotal</span>
@@ -198,7 +200,7 @@
 </section> <!-- .section -->
 
 <script type="text/javascript">
-    var total = '{{ order.get_cart_total }}'
+    var total = '{{ order.get_cart_total|floatformat:2 }}'
 
     form = document.getElementById('form')
 
@@ -218,17 +220,18 @@
             'email':null,
             'total':total
         }
-        if(user != 'AnonymousUser'){
-            shippingFormData.firstname = form.firstname.value
-            shippingFormData.lastname = form.lastname.value
-            shippingFormData.street = form.street.value
-            shippingFormData.towncity= form.towncity.value
-            shippingFormData.phone = form.phone.value
-            shippingFormData.email = form.email.value
-        }
+
+        shippingFormData.firstname = form.firstname.value
+        shippingFormData.lastname = form.lastname.value
+        shippingFormData.street = form.street.value
+        shippingFormData.towncity= form.towncity.value
+        shippingFormData.phone = form.phone.value
+        shippingFormData.email = form.email.value
+
+        console.log(shippingFormData)
 
         var url = '/process_order/'
-        fetch(url,{
+        fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type':'application/json',
@@ -242,8 +245,14 @@
         .then((data) => {
             console.log('data:', data)
             alert("Order Placed")
+
+            cart ={}
+            document.cookie = 'cart=' + JSON.stringify(cart) + ';domain=;path=/'
+
             window.location.href = {% url 'product' %}
         })
   }
+
+
 </script>
 {% endblock %}

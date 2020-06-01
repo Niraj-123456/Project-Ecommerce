@@ -3,6 +3,15 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 
+class Customer(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
+    user = models.OneToOneField(User, on_delete=models.SET_NULL, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Category(models.Model):
     name = models.CharField(max_length=255)
 
@@ -15,7 +24,7 @@ class Category(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=255)
-    price = models.FloatField()
+    price = models.DecimalField(max_digits=7, decimal_places=2)
     image_url = models.CharField(max_length=2058)
     stock = models.IntegerField()
     description = models.CharField(max_length=2058, default='No Description')
@@ -27,7 +36,7 @@ class Product(models.Model):
 
 class Order(models.Model):
     date_ordered = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, blank=True, null=True)
     completed = models.BooleanField(default=False, null=True, blank=False)
     transaction_id = models.CharField(max_length=200, null=True)
 
@@ -63,10 +72,10 @@ class OrderProduct(models.Model):
 
 
 class ShippingAddress(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, blank=True, null=True)
     order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True)
-    firstname = models.CharField(max_length=255)
-    lastname = models.CharField(max_length=255)
+    firstname = models.CharField(max_length=255, blank=True, null=True)
+    lastname = models.CharField(max_length=255, blank=True, null=True)
     street = models.CharField(max_length=255)
     town_city = models.CharField(max_length=255)
     phone = models.IntegerField(null=False, blank=False)
