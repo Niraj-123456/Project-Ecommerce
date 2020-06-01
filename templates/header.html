@@ -9,11 +9,11 @@
                         <span class="text">+ 1235 2355 98</span>
                     </div>
                     <div class="col-md pr-4 d-flex topper align-items-center">
-                        <div class="icon mr-2 d-flex justify-content-center"><span
+                        <div class="icon mr-2 d-flex justify-content-center align-items-center"><span
                                 class="icon-paper-plane"></span></div>
                         <span class="text">E-mail: freshfruits&veges@email.com</span>
                     </div>
-                    <div class="col-md-5 pr-4 d-flex topper align-items-right">
+                    <div class="col-md-5 pr-4 d-flex topper align-items-center text-lg-right">
                         <span class="text">3-5 Business days delivery &amp; Free Returns</span>
                     </div>
                 </div>
@@ -50,7 +50,7 @@
                 <li class="nav-item"><a href="{% url 'contact' %}" class="nav-link">Contact</a></li>
                 <li class="nav-item cta cta-colored"><a href="{% url 'cart' %}" class="nav-link"><span
                         class="icon-shopping_cart"></span>[0]</a></li>
-                {% if request.user == "AnonymousUser" %}
+                {% if not request.user.is_authenticated %}
                 <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Login</a></li>
                 <li class="nav-item"><a href="{% url 'register' %}" class="nav-link">Register</a></li>
                 {% else %}
