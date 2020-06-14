@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +11,6 @@
     <link href="https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Amatic+SC:400,700&display=swap" rel="stylesheet">
 
-    {% load static %}
     <link rel="stylesheet" href="{% static 'css/open-iconic-bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/animate.css' %}">
     <link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
@@ -56,33 +56,37 @@
             return cookieValue;
         }
         var csrftoken = getCsrfToken('csrftoken');
-
-        function getCookie(name){
-            // split cookie string and get all individual name=value pairs in an array
-            var cookieArr = document.cookie.split(";");
-
-            // loop through the array elements
-            for(i = 0; i < cookieArr.length; i++){
-                var cookiePair = cookieArr[i].split("=");
-
-                /* removing whitespace at the beginning of the cookie name and compare it with
-                the given string */
-                if(name == cookiePair[0].trim()){
-                    // Decode the cookie value and return
-                    return decodeURIComponent(cookiePair[1]);
-                }
-            }
-            // return null if not found
-            return null;
-        }
-        var cart = JSON.parse(getCookie('cart'))
-        if(cart == undefined){
-            cart = {}
-            console.log("cart was created.")
-            document.cookie = 'cart=' + JSON.stringify(cart) + ';domain=;path=/'
-        }
-        console.log('Cart:', cart)
     </script>
+
+<!--    <script>-->
+<!--        function getCookie(name){-->
+<!--            // split cookie string and get all individual name=value pairs in an array-->
+<!--            var cookieArr = document.cookie.split(";");-->
+
+<!--            // loop through the array elements-->
+<!--            for(i = 0; i < cookieArr.length; i++){-->
+<!--                var cookiePair = cookieArr[i].split("=");-->
+
+<!--                /* removing whitespace at the beginning of the cookie name and compare it with-->
+<!--                the given string */-->
+<!--                if(name == cookiePair[0].trim()){-->
+<!--                    // Decode the cookie value and return-->
+<!--                    return decodeURIComponent(cookiePair[1]);-->
+<!--                }-->
+<!--            }-->
+<!--            // return null if not found-->
+<!--            return null;-->
+<!--        }-->
+<!--        var cart = JSON.parse(getCookie('cart'))-->
+<!--        if(cart == undefined){-->
+<!--            cart = {}-->
+<!--            console.log("cart was created.")-->
+<!--            document.cookie = 'cart=' + JSON.stringify(cart) + ';domain=;path=/'-->
+<!--        }-->
+<!--        console.log('Cart:', cart)-->
+<!--    </script>-->
+
+
 </head>
 <body class="goto-here">
 
@@ -106,7 +110,6 @@
 </div>
 
 <!--Scripts-->
-{% load static %}
 <script src="{% static 'js/jquery.min.js' %}"></script>
 <script src="{% static 'js/jquery-migrate-3.0.1.min.js' %}"></script>
 <script src="{% static 'js/popper.min.js' %}"></script>
@@ -135,7 +138,6 @@
         integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
         crossorigin="anonymous"></script>
 <script src="{% static 'js/cart.js' %}"></script>
-
 
 
 {% block script %}

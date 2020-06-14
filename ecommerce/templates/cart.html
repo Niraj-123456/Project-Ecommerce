@@ -39,6 +39,8 @@
                             <th>Price</th>
                             <th>Quantity(Kg)</th>
                             <th>Total</th>
+                            <th>Discount($)</th>
+                            <th>Grand Total($)</th>
                             <th>Action</th>
                         </tr>
                         </thead>
@@ -60,15 +62,21 @@
                             <td class="price">${{ product.product.price|floatformat:2 }}</td>
 
                             <td class="quantity">
-                                <a href="#" data-product="{{ product.product.id }}" data-action="remove"
+                                <a href="#" data-product= {{ product.product.id }} data-action="remove"
                                    class="add-cart"><i class="fas fa-minus-circle mr-2"></i></a>
                                 {{ product.quantity }}
-                                <a href="#" data-product="{{ product.product.id }}" data-action="add"
+                                <a href="#" data-product= {{ product.product.id }} data-action="add"
                                    class="add-cart"><i class="fas fa-plus-circle ml-2"></i></a>
                             </td>
-                            <td class="total">${{ product.get_total|floatformat:2}}</td>
+                            <td class="total">${{ product.get_total|floatformat:2 }}</td>
+                            {% if product.product.discount_id %}
+                            <td>$ {{ product.get_discount|floatformat:2 }}</td>
+                            {% else %}
+                            <td>N/A</td>
+                            {% endif %}
+                            <td>$ {{ product.get_cart_total|floatformat:2 }}</td>
                             <td class="action">
-                                <a href="#" data-product="{{ product.product.id }}" data-action="delete"
+                                <a href="" data-product= {{ product.product.id }} data-action="delete"
                                    class="add-cart mt-2">
                                     <i class="far fa-trash-alt fa-lg" style="color: red !important;"></i>
                                     <p style="color: red !important;">Delete</p>
@@ -121,7 +129,7 @@
                     <h3>Cart Totals</h3>
                     <p class="d-flex">
                         <span>Subtotal</span>
-                        <span>${{ order.get_cart_total|floatformat:2}}</span>
+                        <span>${{ order.get_cart_sub_total|floatformat:2}}</span>
                     </p>
                     <p class="d-flex">
                         <span>Delivery</span>
@@ -134,7 +142,7 @@
                     <hr>
                     <p class="d-flex total-price">
                         <span>Total</span>
-                        <span>${{ order.get_cart_total|floatformat:2 }}</span>
+                        <span>${{ order.get_cart_grand_total|floatformat:2 }}</span>
                     </p>
                 </div>
                 <p><a href="{% url 'checkout' %}" class="btn btn-primary py-3 px-4">Proceed to Checkout</a></p>

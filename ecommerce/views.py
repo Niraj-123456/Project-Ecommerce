@@ -8,6 +8,7 @@ from .decorators import unauthenticated_user
 import datetime
 from django.contrib import messages
 from .forms import CreateUserFrom
+from django.core.paginator import Paginator
 from .utils import *
 
 
@@ -24,9 +25,17 @@ def contact(request):
 
 
 def product(request):
-    products = Product.objects.all()
+    products = Product.objects.filter().order_by('-date_added')
     categories = Category.objects.all()
-    return render(request, 'products.html', {'products': products, 'categories': categories})
+    paginator = Paginator(products, per_page=8)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    context = {'products': page_obj.object_list,
+               'categories': categories,
+               'paginator': paginator,
+               'page_number': int(page_number)
+               }
+    return render(request, 'products.html', context)
 
 
 def product_detail(request, id):
@@ -37,7 +46,15 @@ def product_detail(request, id):
 def product_category(request, category_id):
     products = Product.objects.filter(category_id=category_id)
     categories = Category.objects.all()
-    return render(request, 'products.html', {'products': products, 'categories': categories})
+    paginator = Paginator(products, per_page=8)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    context = {'products': page_obj.object_list,
+               'categories': categories,
+               'paginator': paginator,
+               'page_number': int(page_number)
+               }
+    return render(request, 'products.html', context)
 
 
 @unauthenticated_user
@@ -62,10 +79,6 @@ def login_user(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            customer, created = Customer.objects.get_or_create(
-                user=user,
-                name=username
-            )
             return redirect('product')
         else:
             messages.info(request, 'email or password incorrect')
@@ -83,83 +96,158 @@ def user_account(request):
     return render(request, 'useraccount.html')
 
 
+@login_required(login_url='login')
 def add_item_to_cart(request):
     data = json.loads(request.body)
     productId = data['productId']
     action = data['action']
-
-    print(productId)
-    print(action)
-
-    customer = request.user.customer
-
+    user = request.user
     product = Product.objects.get(id=productId)
-
-    order, created = Order.objects.get_or_create(customer=customer, completed=False)
-
+    order, created = Order.objects.get_or_create(user=user, completed=False)
     orderProduct, created = OrderProduct.objects.get_or_create(order=order, product=product)
 
     if action == 'add':
-        orderProduct.quantity = (orderProduct.quantity + 1)
-        messages.success(request, 'Product added to your cart successfully.')
+        orderProduct.quantity += 1
+        messages.success(request, 'Product added to your cart successfully')
 
     elif action == 'remove':
-        orderProduct.quantity = (orderProduct.quantity - 1)
-        messages.info(request, 'Product updated in your cart.')
+        orderProduct.quantity -= 1
+        messages.warning(request, 'Quantity updated successfully')
 
     elif action == 'delete':
         orderProduct.quantity = 0
-        messages.warning(request, 'Product has been removed from the cart successfully.')
+        messages.warning(request, 'Product successfully removed from your cart.')
 
     orderProduct.save()
 
     if orderProduct.quantity <= 0:
         orderProduct.delete()
 
-    return JsonResponse("Product Added to cart", safe=False)
+    return JsonResponse("Product updated successfully", safe=False)
 
 
+# @login_required(login_url='login')
+# def add_item_to_cart(request):
+#     data = json.loads(request.body)
+#     productId = data['productId']
+#     action = data['action']
+#
+#     print(productId)
+#     print(action)
+#
+#     user = request.user
+#
+#     product = Product.objects.get(id=productId)
+#
+#     order, created = Order.objects.get_or_create(user=user, completed=False)
+#
+#     orderProduct, created = OrderProduct.objects.get_or_create(order=order, product=product)
+#
+#     if action == 'add':
+#         orderProduct.quantity = (orderProduct.quantity + 1)
+#         messages.success(request, 'Product added to your cart successfully.')
+#
+#     elif action == 'remove':
+#         orderProduct.quantity = (orderProduct.quantity - 1)
+#         messages.info(request, 'Product updated in your cart.')
+#
+#     elif action == 'delete':
+#         orderProduct.quantity = 0
+#         messages.warning(request, 'Product has been removed from the cart successfully.')
+#
+#     orderProduct.save()
+#
+#     if orderProduct.quantity <= 0:
+#         orderProduct.delete()
+#
+#     return JsonResponse("Product Added to cart", safe=False)
+
+@login_required(login_url='login')
 def view_cart(request):
-    data = cart_data(request)
+    if request.user.is_authenticated:
+        user = request.user
+        order, created = Order.objects.get_or_create(user=user, completed=False)
+        products = order.orderproduct_set.all()
 
-    products = data['products']
-    order = data['order']
-    cartItems = data['cartItems']
-
-    context = {'products': products, 'order': order, 'cartItems': cartItems}
+    context = {'products': products, 'order': order}
     return render(request, 'cart.html', context)
 
 
+@login_required(login_url='login')
 def checkout(request):
-    data = cart_data(request)
-
-    products = data['products']
-    order = data['order']
-    cartItems = data['cartItems']
-
-    context = {'products': products, 'order': order, 'cartItems': cartItems}
+    if request.user.is_authenticated:
+        user = request.user
+        order, created = Order.objects.get_or_create(user=user, completed=False)
+        products = order.orderproduct_set.all()
+    context = {'products': products, 'order': order}
     return render(request, 'checkout.html', context)
 
 
 # @login_required(login_url='login')
+# def process_order(request):
+#     data = json.loads(request.body)
+#     transaction_id = datetime.datetime.now().timestamp()
+#     if request.user.is_authenticated:
+#         user = request.user
+#         order, created = Order.objects.get_or_create(user=user, completed=False)
+#         messages.success(request, 'Your Order has been successfully created.')
+# 
+#     total = data['shipping-info']['total']
+#     order.transaction_id = transaction_id
+# 
+#     if total == order.get_cart_total:
+#         order.completed = True
+#         print("order completed")
+# 
+#     order.save()
+# 
+#     ShippingAddress.objects.create(
+#         user=user,
+#         order=order,
+#         firstname=data['shipping-info']['firstname'],
+#         lastname=data['shipping-info']['lastname'],
+#         street=data['shipping-info']['street'],
+#         town_city=data['shipping-info']['towncity'],
+#         phone=data['shipping-info']['phone'],
+#         email=data['shipping-info']['email']
+#     )
+#     # else:
+#         # customer, order = guest_order(request, data)
+#     # total = data['shipping-info']['total']
+#     # order.transaction_id = transaction_id
+#     # if total == order.get_cart_total:
+#     #     order.completed = True
+#     #     print("order completed")
+#     # order.save()
+#     #
+#     # ShippingAddress.objects.create(
+#     #     user=user,
+#     #     order=order,
+#     #     firstname=data['shipping-info']['firstname'],
+#     #     lastname=data['shipping-info']['lastname'],
+#     #     street=data['shipping-info']['street'],
+#     #     town_city=data['shipping-info']['towncity'],
+#     #     phone=data['shipping-info']['phone'],
+#     #     email=data['shipping-info']['email']
+#     # )
+# 
+#     return JsonResponse("Order submitted", safe=False)
+
+@login_required(login_url='login')
 def process_order(request):
     data = json.loads(request.body)
     transaction_id = datetime.datetime.now().timestamp()
     if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer, completed=False)
-        messages.success(request, 'Your Order has been successfully created.')
-    else:
-        customer, order = guest_order(request, data)
-    total = data['shipping-info']['total']
-    order.transaction_id = transaction_id
-    if total == order.get_cart_total:
-        order.completed = True
-        print("order completed")
-    order.save()
-
+        user = request.user
+        order, created = Order.objects.get_or_create(user=user, completed=False)
+        total = float(data['shipping-info']['total'])
+        order.transaction_id = transaction_id
+        if total == float(order.get_cart_total):
+            order.completed = True
+            print("order completed")
+            order.save()
     ShippingAddress.objects.create(
-        customer=customer,
+        user=user,
         order=order,
         firstname=data['shipping-info']['firstname'],
         lastname=data['shipping-info']['lastname'],
@@ -168,5 +256,5 @@ def process_order(request):
         phone=data['shipping-info']['phone'],
         email=data['shipping-info']['email']
     )
-
-    return JsonResponse("Order submitted", safe=False)
+    messages.success(request, 'Your order has been successfully placed.')
+    return JsonResponse("Your order has been placed successfully", safe=False)
